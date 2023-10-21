@@ -26,6 +26,7 @@ pipeline {
             steps {
                 dir("app/src") {
                     sh "docker run --rm ${image} pytest -v"
+                    sh "docker run --rm ${image} flake8"
                 }
             }
         }
