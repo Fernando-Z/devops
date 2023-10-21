@@ -1,18 +1,21 @@
 - name: "Run stack"
   hosts: localhost
+  become: true
   connection: local
   tasks:
 
     - name: Download Minikube images
+      become: true
       shell:
         cmd: |
-          minikube start --driver=docker --download-only
+          minikube start --driver=docker --download-only --force
         chdir: ../infra
       register: output
 
     - debug: var=output.stdout_lines
 
     - name: Run Terraform
+      become: true
       shell:
         cmd: |
           terraform init
@@ -23,6 +26,7 @@
     - debug: var=output.stdout_lines
 
     - name: Run Prometheus, Grafana and Loki
+      become: true
       shell:
         cmd: |
           docker-compose up -d
@@ -32,6 +36,7 @@
     - debug: var=output.stdout_lines
 
     - name: Apply Promtail to Kubernetes
+      become: true
       shell:
         cmd: |
           minikube kubectl -- apply -f promtail.yaml
@@ -41,6 +46,7 @@
     - debug: var=output.stdout_lines
 
     - name: Get Jenkins pwd
+      become: true
       shell: |
         docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword
       register: jenkins_pwd

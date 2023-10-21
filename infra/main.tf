@@ -14,6 +14,7 @@ provider "minikube" {
 resource "minikube_cluster" "docker" {
   driver       = "docker"
   cluster_name = "terraform-minikube-docker"
+  force        = "true"
   addons = [
     "dashboard",
     "default-storageclass",
