@@ -1,0 +1,71 @@
+- name: "Install packages and dependencies"
+  hosts: localhost
+  become: true
+  connection: local
+  tasks:
+
+    - name: Apt update
+      apt:
+        name: aptitude
+        state: latest
+        update_cache: true
+
+    - name: Install apt packages
+      apt:
+        pkg:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+          - wget
+          - unzip
+        state: latest
+        update_cache: true
+
+    - name: Add Docker GPG apt Key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker Repository
+      apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu jammy stable
+        state: present
+
+    - name: Update apt and install docker-ce
+      apt:
+        name: docker-ce
+        state: latest
+        update_cache: true
+
+    - name: Download and install Terraform
+      unarchive:
+        src: https://releases.hashicorp.com/terraform/1.6.1/terraform_1.6.1_linux_amd64.zip
+        dest: /usr/local/bin
+        remote_src: yes
+
+    - name: Install Minikube
+      apt:
+        deb: "https://storage.googleapis.com/minikube/releases/latest/minikube_latest_amd64.deb"
+        state: present
+
+    - name: Download Helm
+      unarchive:
+        src: "https://get.helm.sh/helm-v3.13.1-linux-amd64.tar.gz"
+        remote_src: yes
+        dest: /tmp
+
+    - name: Install Helm
+      copy:
+        src: /tmp/linux-amd64/helm
+        remote_src: yes
+        dest: /usr/local/bin/helm
+        mode: "0755"
+
+    - name: Install Jenkins
+      shell:
+        cmd: |
+          docker build -t jenkins_docker .
+          mkdir ~/jenkins
+          docker run -d --restart unless-stopped --privileged -p 8080:8080 -p 50000:50000 -v ~/jenkins:/var/jenkins_home -v /var/run/docker.sock:/var/run/docker.sock --name jenkins jenkins_docker
+        chdir: jenkins

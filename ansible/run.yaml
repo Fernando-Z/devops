@@ -1,0 +1,39 @@
+- name: "Run stack"
+  hosts: localhost
+  connection: local
+  tasks:
+
+    - name: Run Terraform
+      shell:
+        cmd: |
+          terraform init
+          terraform apply -auto-approve
+        chdir: infra
+      register: output
+
+    - debug: var=output.stdout_lines
+
+    - name: Run Prometheus, Grafana and Loki
+      shell:
+        cmd: |
+          docker-compose up -d
+        chdir: monitoring
+      register: output
+
+    - debug: var=output.stdout_lines
+
+    - name: Apply Promtail to Kubernetes
+      shell:
+        cmd: |
+          minikube kubectl -- apply -f promtail.yaml
+        chdir: monitoring/promtail
+      register: output
+
+    - debug: var=output.stdout_lines
+
+    - name: Get Jenkins pwd
+      shell: |
+        docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword
+      register: jenkins_pwd
+
+    - debug: var=jenkins_pwd.stdout_lines
