@@ -62,10 +62,16 @@
         dest: /usr/local/bin/helm
         mode: "0755"
 
+    - name: Add user to docker group
+      become: true
+      shell:
+        cmd: |
+          usermod -aG docker $(whoami)
+
     - name: Install Jenkins
       shell:
         cmd: |
           docker build -t jenkins_docker .
           mkdir ~/jenkins
           docker run -d --restart unless-stopped --privileged -p 8080:8080 -p 50000:50000 -v ~/jenkins:/var/jenkins_home -v /var/run/docker.sock:/var/run/docker.sock --name jenkins jenkins_docker
-        chdir: jenkins
+        chdir: ../jenkins
