@@ -1,0 +1,52 @@
+pipeline {
+    environment {
+        registry = 'fzerati/devops'
+        dockerImage = ''
+    }
+    agent any
+    stages {
+        stage('Checkout') {
+                steps {
+                git branch: 'main',
+                    url: 'https://github.com/Fernando-Z/devops.git'
+            }
+        }
+        stage('Build') {
+            steps {
+                script {
+                    dir("app/src") {
+                        image = registry + ":${env.BUILD_ID}"
+                        println ("${image}")
+                        sh "docker build -t ${image} ."
+                    }
+                }
+            }
+        }
+        stage('Test') {
+            steps {
+                dir("app/src") {
+                    sh "docker run --rm ${image} pytest -v"
+                }
+            }
+        }
+        stage('Push') {
+            steps {
+                dir("app/src") {
+                    withCredentials([usernamePassword(credentialsId: 'dockerHub', passwordVariable: 'dockerHubPassword', usernameVariable: 'dockerHubUser')]) {
+        	            sh "docker login -u ${env.dockerHubUser} -p ${env.dockerHubPassword}"
+                    }
+                    sh "docker tag ${image} ${registry}:latest"
+                    sh "docker push ${image}"
+                    sh "docker push ${registry}:latest"
+                }
+            }
+        }
+        stage('Deploy') {
+            steps {
+                dir("app/helm") {
+                    sh "helm upgrade --install python-devops-chart python-devops/ --values python-devops/values.yaml"
+                }
+            }
+        }
+    }
+}
