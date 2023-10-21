@@ -129,20 +129,28 @@ A configuração do Promtail é aplicada via Ansible como arquivo de configuraç
 
 Abaixo estão exemplos da stack executando localmente:
 
+Minikube
 ![minikube](docs/minikube.png)
-
+---
+Pipeline
 ![pipeline](docs/pipeline.png)
-
+---
+DockerHub
 ![dockerhub](docs/dockerhub.png)
-
+---
+Dashboard
 ![pod](docs/pod.png)
-
+---
+CLI
 ![cli](docs/cli.png)
-
+---
+Prometheus
 ![prometheus](docs/prometheus.png)
-
+---
+Grafana
 ![grafana](docs/grafana.png)
-
+---
+Loki
 ![loki](docs/loki.png)
 
 ### Autor
