@@ -3,12 +3,21 @@
   connection: local
   tasks:
 
+    - name: Download Minikube images
+      shell:
+        cmd: |
+          minikube start --driver=docker --download-only
+        chdir: ../infra
+      register: output
+
+    - debug: var=output.stdout_lines
+
     - name: Run Terraform
       shell:
         cmd: |
           terraform init
           terraform apply -auto-approve
-        chdir: infra
+        chdir: ../infra
       register: output
 
     - debug: var=output.stdout_lines
@@ -17,7 +26,7 @@
       shell:
         cmd: |
           docker-compose up -d
-        chdir: monitoring
+        chdir: ../monitoring
       register: output
 
     - debug: var=output.stdout_lines
@@ -26,7 +35,7 @@
       shell:
         cmd: |
           minikube kubectl -- apply -f promtail.yaml
-        chdir: monitoring/promtail
+        chdir: ../monitoring/promtail
       register: output
 
     - debug: var=output.stdout_lines
